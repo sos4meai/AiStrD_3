@@ -85,22 +85,22 @@ void Heap::insert(int key)
 
 	if (current->parent != nullptr)
 	{
-		if (current->parent->right != nullptr)//ó ðîäèòåëÿ åñòü ïðàâûé óçåë 
+		if (current->parent->right != nullptr)//Ã³ Ã°Ã®Ã¤Ã¨Ã²Ã¥Ã«Ã¿ Ã¥Ã±Ã²Ã¼ Ã¯Ã°Ã Ã¢Ã»Ã© Ã³Ã§Ã¥Ã« 
 		{
-			current = current->parent->right;//ïåðåõîäèì íà íåãî 
-			while (current->left != nullptr)//åñëè ó òîãî åñòü ëåâûé 
+			current = current->parent->right;//Ã¯Ã¥Ã°Ã¥ÃµÃ®Ã¤Ã¨Ã¬ Ã­Ã  Ã­Ã¥Ã£Ã® 
+			while (current->left != nullptr)//Ã¥Ã±Ã«Ã¨ Ã³ Ã²Ã®Ã£Ã® Ã¥Ã±Ã²Ã¼ Ã«Ã¥Ã¢Ã»Ã© 
 				current = current->left;
 		}
 
-		else current = current->parent;//íåò ïðàâîãî óçëà,âñòàâèì â ïðàâûé 
+		else current = current->parent;//Ã­Ã¥Ã² Ã¯Ã°Ã Ã¢Ã®Ã£Ã® Ã³Ã§Ã«Ã ,Ã¢Ã±Ã²Ã Ã¢Ã¨Ã¬ Ã¢ Ã¯Ã°Ã Ã¢Ã»Ã© 
 	}
 	else
-	{ //ìû â êîðíå 
+	{ //Ã¬Ã» Ã¢ ÃªÃ®Ã°Ã­Ã¥ 
 		while (current->left != nullptr)
 			current = current->left;
 	}
 
-	if (current->left != nullptr)//âñòàâêà âïðàâî 
+	if (current->left != nullptr)//Ã¢Ã±Ã²Ã Ã¢ÃªÃ  Ã¢Ã¯Ã°Ã Ã¢Ã® 
 	{
 		current->right = elem;
 		last = current->right;
@@ -121,34 +121,77 @@ void Heap::insert(int key)
 
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void Heap::siftDown(Node* current)
+{
+	if (!current)
+		return;
+	Node* maxChild=nullptr;
+
+	if (!current->left && !current->right)
+		return;
+
+	if (current->left&&current->right)
+		if (current->left->key >= current->right->key)
+			maxChild = current->left;
+		else
+			maxChild = current->right;
+	if (current->left && !current->right)
+		maxChild = current->left;
+	if (current->right&&!current->left)
+		maxChild = current->right;
+
+	if (current->key<maxChild->key)
+	{
+		int temp = maxChild->key;
+		maxChild->key = current->key;
+		current->key = temp;
+	}
+	
+	siftDown(current->left);
+	siftDown(current->right);
+
+}
+
 void Heap::req_remove(int key, Node* node)
 {
-	if (node&&contains(node, key))
+	if (node && contains(root, key))
 	{
-		req_remove(key, node->left);
-		req_remove(key, node->right);
-		
-		if (size == 1)
-		{
-			Heap::delete_heap(root);
-			return;
-		}
 
 		if (node->key == key)
 		{
-			cout << "Find! Parent:"<< node->parent->key;
+			if (size == 1)
+			{
+				Heap::delete_heap(root);
+				return;
+			}
+
 			node->key = last->key;
+			siftDown(node);
+
+
+
 			if (last == last->parent->left)
 				last->parent->left = nullptr;
 			if (last == last->parent->right)
 				last->parent->right = nullptr;
 			last = last->prev_last;
 			size--;
+
+			req_remove(key, node);
 		}
+
+		req_remove(key, node->left);
+		req_remove(key, node->right);
 
 	}
 	else return;
 
+}
+
+void Heap::remove(int key)
+{
+	req_remove(key, root);
 }
 
 void Heap::print(Node* root, int level)
@@ -157,7 +200,11 @@ void Heap::print(Node* root, int level)
 	{
 		print(root->right, level + 1);
 		for (int i = 0; i < level; i++) cout << "    ";
-		cout << root->key << endl;
+		if (root->parent && root == root->parent->left)
+			cout << "\\ L:";
+		if (root->parent && root == root->parent->right)
+			cout << "/ R:";
+		cout << root->key << endl<<endl;
 		print(root->left, level + 1);
 	}
 }
@@ -226,7 +273,7 @@ bool Heap::depthIterator::has_next()
 }
 
 
-Iterator * Heap::depthcreate_iterator()//â ãëóáèíó 
+Iterator * Heap::depthcreate_iterator()//Ã¢ Ã£Ã«Ã³Ã¡Ã¨Ã­Ã³ 
 {
 	return new depthIterator(this->root);
 }
